@@ -2,7 +2,6 @@ package by.xRadeN;
 
 import by.xRadeN.Commands.rKillRewardsCmd;
 import by.xRadeN.Events.MoneyRewardEvent;
-import by.xRadeN.Hooks.PlaceholderAPIHook;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.apache.commons.lang.time.StopWatch;
@@ -29,7 +28,6 @@ public final class rKillRewards extends JavaPlugin {
             this.getConfig().options().copyDefaults();
             this.saveDefaultConfig();
             this.setupEconomy();
-            this.setupPlaceholders();
             this.setupEvents();
             this.setupPermissions();
             Bukkit.getLogger().log(Level.INFO, "[rKillRewards] Loaded in " + sw.getTime() + "ms");
@@ -56,15 +54,6 @@ public final class rKillRewards extends JavaPlugin {
         RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager().getRegistration(Permission.class);
         perms = rsp.getProvider();
         return perms != null;
-    }
-
-    private void setupPlaceholders() {
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new PlaceholderAPIHook(this).register();
-        } else {
-            getLogger().warning("Could not find PlaceholderAPI! This plugin is required.");
-            Bukkit.getPluginManager().disablePlugin(this);
-        }
     }
 
     private void setupEvents() {
