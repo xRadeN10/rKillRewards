@@ -1,10 +1,12 @@
 package by.xRadeN;
 
 import by.xRadeN.Commands.rKillRewardsCmd;
-import by.xRadeN.Events.MoneyRewardEvent;
+import by.xRadeN.Events.MonsterRewardEvent;
+import by.xRadeN.Events.PlayerRewardEvent;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.apache.commons.lang.time.StopWatch;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,14 +27,16 @@ public final class rKillRewards extends JavaPlugin {
     public void onEnable() {
             StopWatch sw = new StopWatch();
             sw.start();
+            Bukkit.getLogger().log(Level.INFO, "[rKillRewards] Loading plugin...");
             this.getConfig().options().copyDefaults();
             this.saveDefaultConfig();
-            this.setupEconomy();
             this.setupEvents();
+            this.setupCommands();
+            this.setupbStats();
+            this.setupEconomy();
             this.setupPermissions();
             Bukkit.getLogger().log(Level.INFO, "[rKillRewards] Loaded in " + sw.getTime() + "ms");
             sw.stop();
-            getCommand("rkillrewards").setExecutor(new rKillRewardsCmd());
             instance = this;
     }
 
@@ -57,6 +61,14 @@ public final class rKillRewards extends JavaPlugin {
     }
 
     private void setupEvents() {
-        getServer().getPluginManager().registerEvents(new MoneyRewardEvent(), this);
+        getServer().getPluginManager().registerEvents(new PlayerRewardEvent(), this);
+        getServer().getPluginManager().registerEvents(new MonsterRewardEvent(), this);
+    }
+
+    private void setupCommands() { getCommand("rkillrewards").setExecutor(new rKillRewardsCmd()); }
+
+    private void setupbStats() {
+        int pluginId = 10683; // <-- Replace with the id of your plugin!
+        Metrics metrics = new Metrics(this, pluginId);
     }
 }
