@@ -3,17 +3,19 @@ package by.xRadeN.Events;
 import by.xRadeN.rKillRewards;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Animals;
+import org.bukkit.entity.Monster;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 import java.util.HashMap;
 import java.util.UUID;
 
-public class MoneyRewardEvent implements Listener {
+public class PlayerRewardEvent implements Listener {
 
     private final HashMap<UUID, String> lastdamager = new HashMap<>();
     private String translate(String s) {return ChatColor.translateAlternateColorCodes('&', rKillRewards.getInstance().getConfig().getString(s));}
@@ -31,7 +33,7 @@ public class MoneyRewardEvent implements Listener {
             String moneyReward = rKillRewards.getInstance().getConfig().getString("Rewards." + group + ".player-reward");
             if (moneyReward == null) {
                 if (enabled("Settings.prefix-enabled")) killer.sendMessage(translate("Messages.prefix") + translate("Messages.reward-not-set"));
-                    else killer.sendMessage(translate("Messages.reward-not-set"));
+                else killer.sendMessage(translate("Messages.reward-not-set"));
                 return;
             }
             Player killed = e.getEntity().getPlayer();
@@ -43,56 +45,27 @@ public class MoneyRewardEvent implements Listener {
                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), customReward.replace("%player%", killer.getName()));
                 }
             if (enabled("Settings.death-message-enabled")) {
-                String deathMsg = translate("Messages.death-message").replace("%killer", killer.getName());
+                String deathMsg = translate("Messages.death-message").replace("%killer%", killer.getName());
                 if (prefixEnabled()) killed.sendMessage(deathMsg);
-                    else killed.sendMessage(translate("Messages.prefix") + deathMsg);
+                else killed.sendMessage(translate("Messages.prefix") + deathMsg);
             }
-            if (enabled("Settings.player-kill-message-enabled")) {
-                String killMsg = translate("Messages.player-kill-message")
+            if(enabled("Settings.custom-reward-message-enabled")) {
+                String customRewardMsg = translate("Messages.custom-reward-message").replace("%killed%", killed.getName());
+                if (prefixEnabled()) killer.sendMessage(customRewardMsg);
+                else killer.sendMessage(translate("Messages.prefix") + customRewardMsg);
+            } else if (enabled("Settings.player-reward-message-enabled")) {
+                String killMsg = translate("Messages.player-reward-message")
                         .replace("%killed%", killed.getName())
                         .replace("%player_reward%", moneyReward);
                 if (prefixEnabled()) killer.sendMessage(killMsg);
-                    else killer.sendMessage(translate("Messages.prefix") + killMsg);
+                else killer.sendMessage(translate("Messages.prefix") + killMsg);
             }
             if (enabled("Settings.broadcast-message-enabled")) {
                 String broadcastMsg = translate("Messages.broadcast-message")
                         .replace("%killer%", killer.getName())
                         .replace("%killed%", killed.getName());
                 if (prefixEnabled()) Bukkit.broadcastMessage(broadcastMsg);
-                    else Bukkit.broadcastMessage(translate("Messages.prefix") + broadcastMsg);
-            }
-        }
-    }
-
-    @EventHandler
-    public void onMonsterKill(EntityDeathEvent e) {
-        if (e.getEntity().getKiller() == null || e.getEntity() instanceof Player) return;
-        for (String mobName : rKillRewards.getInstance().getConfig().getStringList("Settings.monsters")) {
-            String monsterKilled = e.getEntity().getName();
-            if (monsterKilled.equalsIgnoreCase(mobName)) {
-                Player player = e.getEntity().getKiller();
-                String group = rKillRewards.getInstance().perms.getPrimaryGroup(player);
-                if (!enabled("Rewards." + group + ".monster-reward-enabled")) return;
-                String reward = rKillRewards.getInstance().getConfig().getString("Rewards." + group + ".monster-reward");
-                if (reward == null) {
-                    if (prefixEnabled()) player.sendMessage(translate("Messages.reward-not-set"));
-                        else player.sendMessage(translate("Messages.prefix") + translate("Messages.reward-not-set"));
-                    return;
-                }
-                double monsterKillReward = rKillRewards.getInstance().getConfig().getDouble("Rewards." + group + ".monster-reward");
-                rKillRewards.getInstance().econ.depositPlayer(player, monsterKillReward);
-                if(enabled("Rewards." + group + ".monster-custom-reward-enabled"))
-                    for (String customReward : rKillRewards.getInstance().getConfig().getStringList("Rewards." + group + ".monster-custom-reward")) {
-                        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), customReward.replace("%player%", player.getName()));
-                    }
-                if (enabled("Settings.monster-kill-message-enabled")) {
-                    String killMsg = translate("Messages.monster-kill-message")
-                            .replace("%killed%", monsterKilled)
-                            .replace("%monster_reward%", reward);
-                    if (prefixEnabled()) player.sendMessage(killMsg);
-                        else player.sendMessage(translate("Messages.prefix") + killMsg);
-                }
-                break;
+                else Bukkit.broadcastMessage(translate("Messages.prefix") + broadcastMsg);
             }
         }
     }
